@@ -7,7 +7,8 @@ import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, w
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/icons/icon';
-import { brandGradient, colors, glow, spring, textGlow } from '@/theme/tokens';
+import { useUnreadTotal } from '@/store/messages';
+import { brandGradient, brandSolid, colors, glow, spring, textGlow } from '@/theme/tokens';
 
 export const TAB_BAR_HEIGHT = 58;
 
@@ -16,6 +17,7 @@ const BAR = 20;
 const ITEMS: Record<string, { icon: IconName; label: string }> = {
   index: { icon: 'explore', label: 'Explore' },
   post: { icon: 'post', label: 'Post' },
+  messages: { icon: 'message', label: 'Message' },
   profile: { icon: 'profile', label: 'Me' },
 };
 
@@ -31,6 +33,7 @@ export function useTabBarSpace() {
  */
 export function TabBar({ state, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
+  const unread = useUnreadTotal();
   const [width, setWidth] = useState(0);
   const tabWidth = width / state.routes.length;
   const x = useSharedValue(0);
@@ -80,7 +83,17 @@ export function TabBar({ state, navigation }: BottomTabBarProps) {
                   navigation.navigate(route.name, route.params);
                 }
               }}>
-              <Icon name={item.icon} size={25} gradient={focused} glow={focused} strokeWidth={focused ? 1.9 : 1.6} color={colors.textTertiary} />
+              <View>
+                <Icon
+                  name={item.icon}
+                  size={25}
+                  gradient={focused}
+                  glow={focused}
+                  strokeWidth={focused ? 1.9 : 1.6}
+                  color={colors.textTertiary}
+                />
+                {route.name === 'messages' && unread > 0 && <View style={styles.unreadDot} />}
+              </View>
               <Text style={[styles.label, focused ? [styles.labelActive, textGlow.soft] : null]}>{item.label}</Text>
             </Pressable>
           );
@@ -112,6 +125,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 3,
+  },
+  unreadDot: {
+    position: 'absolute',
+    top: -1,
+    right: -3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: brandSolid,
+    boxShadow: glow.brand,
   },
   label: {
     fontSize: 11,

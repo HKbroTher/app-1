@@ -8,6 +8,7 @@ import { Icon } from '@/components/icons/icon';
 import { IconButton } from '@/components/ui/icon-button';
 import { TextButton } from '@/components/ui/text-button';
 import { CURRENT_USER_ID, users } from '@/data/mock';
+import { followLabel } from '@/data/social-graph';
 import { useSocial } from '@/store/social';
 import { colors } from '@/theme/tokens';
 
@@ -65,7 +66,7 @@ export default function SearchScreen() {
               </View>
               <TextButton
                 size="sm"
-                label={following[item.id] ? '已关注' : '关注'}
+                label={followLabel(item.id, following)}
                 variant={following[item.id] ? 'muted' : 'brand'}
                 onPress={() => toggleFollow(item.id)}
               />

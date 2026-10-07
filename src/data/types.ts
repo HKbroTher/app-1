@@ -5,8 +5,6 @@ export type User = {
   name: string;
   avatar: string;
   bio: string;
-  followers: number;
-  following: number;
 };
 
 export type Exhibition = {
@@ -15,8 +13,16 @@ export type Exhibition = {
   intro: string;
   curatorId: string;
   images: string[]; // always 9, images[0] is the cover
+  topics?: string[]; // without the leading '#'
   startAt: number; // epoch ms
   endAt: number;
   closedAt?: number; // set when closed early
   cancelledAt?: number;
+};
+
+export type ChatMessage = {
+  id: string;
+  from: string; // user id
+  text: string;
+  at: number; // epoch ms
 };

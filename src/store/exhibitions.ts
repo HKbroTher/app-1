@@ -10,6 +10,9 @@ type Patch = Pick<Exhibition, 'closedAt' | 'cancelledAt'>;
 
 type ExhibitionsState = {
   patches: Record<string, Patch>;
+  /** Exhibitions published on this device (mock until the backend exists). */
+  created: Exhibition[];
+  publish: (ex: Omit<Exhibition, 'id'>) => Exhibition;
   /** Allowed only before the lock window starts. */
   cancel: (ex: Exhibition) => boolean;
   /** Allowed only while live. */
@@ -18,6 +21,12 @@ type ExhibitionsState = {
 
 export const useExhibitionStore = create<ExhibitionsState>((set) => ({
   patches: {},
+  created: [],
+  publish: (draft) => {
+    const ex: Exhibition = { ...draft, id: `local-${Date.now()}` };
+    set((s) => ({ created: [ex, ...s.created] }));
+    return ex;
+  },
   cancel: (ex) => {
     const now = Date.now();
     if (getStatus(ex, now) !== 'scheduled' || now >= ex.startAt - LOCK_WINDOW_MS) return false;
@@ -34,7 +43,11 @@ export const useExhibitionStore = create<ExhibitionsState>((set) => ({
 
 export function useExhibitions(): Exhibition[] {
   const patches = useExhibitionStore((s) => s.patches);
-  return useMemo(() => seed.map((e) => (patches[e.id] ? { ...e, ...patches[e.id] } : e)), [patches]);
+  const created = useExhibitionStore((s) => s.created);
+  return useMemo(
+    () => [...created, ...seed].map((e) => (patches[e.id] ? { ...e, ...patches[e.id] } : e)),
+    [patches, created],
+  );
 }
 
 export function useExhibition(id: string | undefined): Exhibition | undefined {

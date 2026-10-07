@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExhibitionCard } from '@/components/exhibition-card';
@@ -13,13 +13,11 @@ import { TextTabs } from '@/components/ui/text-tabs';
 import { getStatus } from '@/data/exhibition-status';
 import { CURRENT_USER_ID, getUser } from '@/data/mock';
 import { useExhibitions } from '@/store/exhibitions';
-import { useSocial } from '@/store/social';
+import { followLabel, isMutual } from '@/data/social-graph';
+import { useFollowers, useFollowingList, useSocial } from '@/store/social';
 import { brandGradient, colors } from '@/theme/tokens';
 
 type Tab = 'upcoming' | 'live' | 'archived' | 'reservations';
-
-// Mock: users who follow me back (for the mutual-follow DM rule).
-const FOLLOWS_ME = new Set(['mori_k', 'nanami']);
 
 type Props = {
   userId: string;
@@ -33,7 +31,10 @@ export function ProfileView({ userId, inTabs = false }: Props) {
   const [tab, setTab] = useState<Tab>('live');
   const tabBarSpace = useTabBarSpace();
   const exhibitions = useExhibitions();
-  const following = useSocial((s) => !!s.following[userId]);
+  const myFollowing = useSocial((s) => s.following);
+  const following = !!myFollowing[userId];
+  const followers = useFollowers(userId);
+  const followingList = useFollowingList(userId);
   const reservations = useSocial((s) => s.reservations);
   const toggleFollow = useSocial((s) => s.toggleFollow);
 
@@ -60,7 +61,9 @@ export function ProfileView({ userId, inTabs = false }: Props) {
 
   if (!user) return null;
 
-  const mutual = following && FOLLOWS_ME.has(userId);
+  const mutual = isMutual(userId, myFollowing);
+  const openConnections = (list: 'followers' | 'following') =>
+    router.push({ pathname: '/connections/[id]', params: { id: userId, list } });
   const exhibitionCount = exhibitions.filter((e) => e.curatorId === userId && getStatus(e) !== 'cancelled').length;
 
   return (
@@ -101,8 +104,8 @@ export function ProfileView({ userId, inTabs = false }: Props) {
 
             <View style={styles.stats}>
               <Stat value={exhibitionCount} label="展览" />
-              <Stat value={user.followers + (following && !isMe ? 1 : 0)} label="关注者" />
-              <Stat value={user.following} label="关注" />
+              <Stat value={followers.length} label="关注者" onPress={() => openConnections('followers')} />
+              <Stat value={followingList.length} label="关注" onPress={() => openConnections('following')} />
             </View>
 
             <View style={styles.actions}>
@@ -111,11 +114,15 @@ export function ProfileView({ userId, inTabs = false }: Props) {
               ) : (
                 <>
                   <TextButton
-                    label={following ? '已关注' : '关注'}
+                    label={followLabel(userId, myFollowing)}
                     variant={following ? 'muted' : 'brand'}
                     onPress={() => toggleFollow(userId)}
                   />
-                  <TextButton label="私信" disabled={!mutual} onPress={() => Alert.alert('私信', '私信功能将在接入后端后开放')} />
+                  <TextButton
+                    label="私信"
+                    disabled={!mutual}
+                    onPress={() => router.push({ pathname: '/chat/[id]', params: { id: userId } })}
+                  />
                 </>
               )}
             </View>
@@ -144,13 +151,13 @@ const EMPTY: Record<Tab, string> = {
   reservations: '还没有预约任何展览',
 };
 
-function Stat({ value, label }: { value: number; label: string }) {
+function Stat({ value, label, onPress }: { value: number; label: string; onPress?: () => void }) {
   const display = value >= 10000 ? `${(value / 10000).toFixed(1)}万` : String(value);
   return (
-    <View style={styles.stat}>
+    <Pressable style={styles.stat} onPress={onPress} disabled={!onPress} hitSlop={6}>
       <Text style={styles.statValue}>{display}</Text>
       <Text style={styles.statLabel}>{label}</Text>
-    </View>
+    </Pressable>
   );
 }
 

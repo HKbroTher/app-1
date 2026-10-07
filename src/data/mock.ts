@@ -12,12 +12,40 @@ const nine = (seed: string) => Array.from({ length: 9 }, (_, i) => img(seed, i))
 const avatar = (seed: string) => `https://picsum.photos/seed/avatar-${seed}/200/200`;
 
 export const users: User[] = [
-  { id: 'me', name: '我', avatar: avatar('me'), bio: '把光收进九个格子里。', followers: 340, following: 88 },
-  { id: 'lumen.studio', name: 'Lumen', avatar: avatar('lumen'), bio: '城市夜色与霓虹', followers: 12800, following: 120 },
-  { id: 'mori_k', name: '森 Mori', avatar: avatar('mori'), bio: '胶片 · 山野 · 慢', followers: 5320, following: 410 },
-  { id: 'azure.lab', name: 'Azure Lab', avatar: avatar('azure'), bio: '数字雕塑实验室', followers: 22100, following: 32 },
-  { id: 'nanami', name: '七海', avatar: avatar('nanami'), bio: '海边的人像练习', followers: 980, following: 233 },
+  { id: 'me', name: '我', avatar: avatar('me'), bio: '把光收进九个格子里。' },
+  { id: 'lumen.studio', name: 'Lumen', avatar: avatar('lumen'), bio: '城市夜色与霓虹' },
+  { id: 'mori_k', name: '森 Mori', avatar: avatar('mori'), bio: '胶片 · 山野 · 慢' },
+  { id: 'azure.lab', name: 'Azure Lab', avatar: avatar('azure'), bio: '数字雕塑实验室' },
+  { id: 'nanami', name: '七海', avatar: avatar('nanami'), bio: '海边的人像练习' },
+  { id: 'kai.film', name: '凯 Kai', avatar: avatar('kai'), bio: '35mm 街头扫街' },
+  { id: 'yuki_draws', name: '雪 Yuki', avatar: avatar('yuki'), bio: '水彩与冬天' },
+  { id: 'orbit.lab', name: 'Orbit Lab', avatar: avatar('orbit'), bio: '生成艺术 · 每周一展' },
+  { id: 'linlin', name: '林林', avatar: avatar('linlin'), bio: '看展爱好者' },
+  { id: 'sora.k', name: '空 Sora', avatar: avatar('sora'), bio: '天空收集者' },
+  { id: 'haru_photo', name: '春 Haru', avatar: avatar('haru'), bio: '花与微距' },
 ];
+
+/**
+ * Seed follow graph: who each user follows (everyone except me — my follows live in the
+ * social store so they can change). Relationship to me:
+ *   mutual: mori_k, nanami, kai.film · follow me only: yuki_draws, linlin, sora.k
+ *   I follow only: orbit.lab · none: lumen.studio, azure.lab, haru_photo
+ */
+export const seedFollows: Record<string, string[]> = {
+  'lumen.studio': ['azure.lab', 'mori_k'],
+  mori_k: ['me', 'lumen.studio', 'haru_photo'],
+  'azure.lab': ['lumen.studio'],
+  nanami: ['me', 'mori_k', 'yuki_draws'],
+  'kai.film': ['me', 'lumen.studio'],
+  yuki_draws: ['me', 'nanami'],
+  'orbit.lab': ['azure.lab'],
+  linlin: ['me'],
+  'sora.k': ['me', 'lumen.studio'],
+  haru_photo: ['mori_k'],
+};
+
+/** Whom I follow when the app starts. */
+export const initialMyFollowing = ['mori_k', 'nanami', 'kai.film', 'orbit.lab'];
 
 export const exhibitions: Exhibition[] = [
   {

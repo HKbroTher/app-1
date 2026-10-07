@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 
 import { getStatus } from '@/data/exhibition-status';
-import { exhibitions } from '@/data/mock';
+import { CURRENT_USER_ID, exhibitions, initialMyFollowing } from '@/data/mock';
+import { followersOf, followingOf, type MyFollowing } from '@/data/social-graph';
 
 // Local mock of follow / reservation state; will be replaced by Supabase queries.
 type SocialState = {
-  following: Record<string, true>;
+  following: MyFollowing; // whom I follow
   reservations: Record<string, true>; // exhibitionId -> reserved
   toggleFollow: (userId: string) => void;
   /** Returns false when the viewer must follow the curator first. */
@@ -14,11 +15,12 @@ type SocialState = {
 };
 
 export const useSocial = create<SocialState>((set, get) => ({
-  following: { 'mori_k': true },
+  following: Object.fromEntries(initialMyFollowing.map((id) => [id, true])) as MyFollowing,
   reservations: {},
 
   toggleFollow: (userId) =>
     set((s) => {
+      if (userId === CURRENT_USER_ID) return {}; // can't follow yourself
       const following = { ...s.following };
       const reservations = { ...s.reservations };
       if (following[userId]) {
@@ -50,3 +52,15 @@ export const useSocial = create<SocialState>((set, get) => ({
       return { reservations };
     }),
 }));
+
+/** Followers of a user, recomputed when my follows change. */
+export function useFollowers(userId: string): string[] {
+  const following = useSocial((s) => s.following);
+  return followersOf(userId, following);
+}
+
+/** Users a user follows, recomputed when my follows change. */
+export function useFollowingList(userId: string): string[] {
+  const following = useSocial((s) => s.following);
+  return followingOf(userId, following);
+}

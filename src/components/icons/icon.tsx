@@ -7,8 +7,10 @@ export type IconName =
   | 'explore'
   | 'post'
   | 'profile'
+  | 'message'
   | 'search'
   | 'back'
+  | 'chevronDown'
   | 'arrowLeft'
   | 'arrowRight'
   | 'bell'
@@ -101,6 +103,12 @@ const GLYPHS: Record<IconName, (s: StrokeProps, paint: string) => ReactNode> = {
       <Path d="M4.75 19.75c1.4-3 4.1-4.5 7.25-4.5s5.85 1.5 7.25 4.5" {...s} />
     </>
   ),
+  message: (s) => (
+    <>
+      <Path d="M4.25 7.75a3.5 3.5 0 0 1 3.5-3.5h8.5a3.5 3.5 0 0 1 3.5 3.5v5.5a3.5 3.5 0 0 1-3.5 3.5h-4.75L8 19.75v-3H7.75a3.5 3.5 0 0 1-3.5-3.5Z" {...s} />
+      <Path d="M8.75 10.5h6.5" {...s} />
+    </>
+  ),
   search: (s) => (
     <>
       <Circle cx="11" cy="11" r="6.75" {...s} />
@@ -108,6 +116,7 @@ const GLYPHS: Record<IconName, (s: StrokeProps, paint: string) => ReactNode> = {
     </>
   ),
   back: (s) => <Path d="M14.5 5.5 8 12l6.5 6.5" {...s} />,
+  chevronDown: (s) => <Path d="m6.5 9.5 5.5 5.5 5.5-5.5" {...s} />,
   arrowLeft: (s) => <Path d="M19.5 12h-15M10 6.5 4.5 12l5.5 5.5" {...s} />,
   arrowRight: (s) => <Path d="M4.5 12h15M14 6.5l5.5 5.5-5.5 5.5" {...s} />,
   bell: (s) => (
